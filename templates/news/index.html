@@ -1,0 +1,1706 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI News Curator - 스마트 뉴스 큐레이션 & 3줄 요약</title>
+  <meta name="description" content="최신 실시간 뉴스 20건을 수집하고 Gemini AI가 사용자의 프롬프트 기준에 맞는 TOP 3 기사를 엄선하여 3줄 요약을 제공하는 프리미엄 뉴스 큐레이터">
+
+  <!-- Fonts: Pretendard & Plus Jakarta Sans -->
+  <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Guaranteed Inline Embedded CSS (캐시 문제 100% 원천 차단) -->
+  <style>
+    /* ==========================================================================
+       AI News Curator - Ultra Premium Dark Design System
+       ========================================================================== */
+    :root {
+      --bg-main: #0a0d18;
+      --bg-surface: #10162a;
+      --bg-card: rgba(16, 22, 42, 0.85);
+      --bg-card-hover: rgba(23, 32, 60, 0.95);
+      --bg-input: #080b15;
+      
+      --border-subtle: rgba(255, 255, 255, 0.1);
+      --border-accent: rgba(99, 102, 241, 0.4);
+      --border-focus: #6366f1;
+
+      --text-pure: #ffffff;
+      --text-head: #f8fafc;
+      --text-body: #cbd5e1;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+
+      --accent-indigo: #6366f1;
+      --accent-purple: #8b5cf6;
+      --accent-pink: #ec4899;
+      --accent-cyan: #06b6d4;
+      --accent-gold: #f59e0b;
+      --accent-gold-light: #fef3c7;
+
+      --gradient-main: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #ec4899 100%);
+      --gradient-gold: linear-gradient(135deg, #f59e0b 0%, #fbbf24 60%, #d97706 100%);
+      --gradient-card-top1: linear-gradient(180deg, rgba(245, 158, 11, 0.15) 0%, rgba(16, 22, 42, 0.9) 100%);
+
+      --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.3);
+      --shadow-md: 0 12px 28px -6px rgba(0, 0, 0, 0.5);
+      --shadow-lg: 0 20px 45px -10px rgba(0, 0, 0, 0.65);
+      --shadow-glow: 0 0 30px rgba(99, 102, 241, 0.25);
+      --shadow-gold: 0 0 35px rgba(245, 158, 11, 0.25);
+
+      --font-family: 'Pretendard', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    /* Reset */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-family);
+      background-color: var(--bg-main);
+      color: var(--text-body);
+      line-height: 1.65;
+      min-height: 100vh;
+      overflow-x: hidden;
+      background-image: 
+        radial-gradient(circle at 20% 10%, rgba(99, 102, 241, 0.18) 0%, transparent 45%),
+        radial-gradient(circle at 80% 20%, rgba(139, 92, 246, 0.16) 0%, transparent 45%),
+        radial-gradient(circle at 50% 85%, rgba(236, 72, 153, 0.12) 0%, transparent 50%);
+      background-attachment: fixed;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .app-container {
+      max-width: 1040px;
+      margin: 0 auto;
+      padding: 3.5rem 1.5rem 6rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Header */
+    .hero-header {
+      text-align: center;
+      margin-bottom: 2.75rem;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.45rem 1.15rem;
+      background: rgba(99, 102, 241, 0.14);
+      border: 1px solid rgba(99, 102, 241, 0.35);
+      border-radius: 9999px;
+      margin-bottom: 1.25rem;
+      box-shadow: 0 0 20px rgba(99, 102, 241, 0.2);
+    }
+
+    .hero-badge-dot {
+      width: 8px;
+      height: 8px;
+      background-color: #34d399;
+      border-radius: 50%;
+      box-shadow: 0 0 10px #34d399;
+      animation: pulseDot 2s infinite ease-in-out;
+    }
+
+    @keyframes pulseDot {
+      0%, 100% { transform: scale(0.9); opacity: 0.7; }
+      50% { transform: scale(1.3); opacity: 1; }
+    }
+
+    .hero-badge-text {
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      color: #a5b4fc;
+    }
+
+    .hero-title {
+      font-size: 3.2rem;
+      font-weight: 800;
+      letter-spacing: -0.035em;
+      line-height: 1.15;
+      margin-bottom: 1.1rem;
+    }
+
+    .gradient-text {
+      background: linear-gradient(135deg, #ffffff 15%, #c7d2fe 55%, #f472b6 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero-subtitle {
+      font-size: 1.12rem;
+      color: var(--text-muted);
+      max-width: 650px;
+      margin: 0 auto;
+      line-height: 1.7;
+    }
+
+    .hero-subtitle .highlight {
+      color: #ffffff;
+      font-weight: 700;
+      border-bottom: 2px solid var(--accent-indigo);
+      padding-bottom: 2px;
+    }
+
+    /* Alerts */
+    .luxury-alert {
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+      padding: 1.1rem 1.35rem;
+      border-radius: 14px;
+      margin-bottom: 2rem;
+      animation: fadeIn 0.3s ease-out;
+    }
+
+    .alert-error {
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.35);
+      color: #fca5a5;
+    }
+
+    .alert-content {
+      font-size: 0.98rem;
+      line-height: 1.55;
+    }
+
+    /* Console / Form Card */
+    .console-card {
+      background: var(--bg-card);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--border-subtle);
+      border-radius: 22px;
+      padding: 2.5rem;
+      box-shadow: var(--shadow-lg), var(--shadow-glow);
+      margin-bottom: 3.5rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .console-card::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: var(--gradient-main);
+    }
+
+    .form-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+    }
+
+    .input-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .panel-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.65rem;
+      cursor: pointer;
+    }
+
+    .label-number {
+      font-size: 0.78rem;
+      font-weight: 800;
+      color: var(--accent-indigo);
+      background: rgba(99, 102, 241, 0.15);
+      padding: 0.25rem 0.55rem;
+      border-radius: 6px;
+      letter-spacing: 0.05em;
+    }
+
+    .label-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text-head);
+    }
+
+    .panel-badge {
+      font-size: 0.8rem;
+      color: var(--text-dim);
+      background: rgba(255, 255, 255, 0.05);
+      padding: 0.3rem 0.75rem;
+      border-radius: 9999px;
+      border: 1px solid var(--border-subtle);
+    }
+
+    .panel-badge.accent {
+      color: #c084fc;
+      background: rgba(192, 132, 252, 0.12);
+      border-color: rgba(192, 132, 252, 0.3);
+    }
+
+    .input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .input-icon {
+      position: absolute;
+      left: 1.25rem;
+      color: var(--text-dim);
+      display: flex;
+      align-items: center;
+      pointer-events: none;
+      transition: color 0.2s;
+    }
+
+    .input-wrapper:focus-within .input-icon {
+      color: var(--accent-indigo);
+    }
+
+    .luxury-input {
+      width: 100%;
+      padding: 1.15rem 1.25rem 1.15rem 3.25rem;
+      background: var(--bg-input);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 14px;
+      color: var(--text-pure);
+      font-family: inherit;
+      font-size: 1.05rem;
+      outline: none;
+      transition: all 0.2s ease-in-out;
+    }
+
+    .luxury-input:focus {
+      border-color: var(--accent-indigo);
+      background: #0d1222;
+      box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.25);
+    }
+
+    .luxury-input::placeholder {
+      color: var(--text-dim);
+      font-size: 0.95rem;
+    }
+
+    .textarea-wrapper {
+      position: relative;
+    }
+
+    .luxury-textarea {
+      width: 100%;
+      padding: 1.15rem 1.35rem;
+      background: var(--bg-input);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 14px;
+      color: var(--text-pure);
+      font-family: inherit;
+      font-size: 1.02rem;
+      line-height: 1.65;
+      outline: none;
+      resize: vertical;
+      min-height: 100px;
+      transition: all 0.2s ease-in-out;
+    }
+
+    .luxury-textarea:focus {
+      border-color: var(--accent-indigo);
+      background: #0d1222;
+      box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.25);
+    }
+
+    .luxury-textarea::placeholder {
+      color: var(--text-dim);
+    }
+
+    /* Preset Chips / Pills */
+    .preset-section {
+      margin-top: 0.85rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .preset-label {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .preset-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.65rem;
+    }
+
+    .preset-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #cbd5e1;
+      padding: 0.5rem 1rem;
+      border-radius: 9999px;
+      font-family: inherit;
+      font-size: 0.86rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease-in-out;
+    }
+
+    .preset-pill .pill-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background-color: var(--accent-indigo);
+      transition: all 0.2s;
+    }
+
+    .preset-pill:hover {
+      background: rgba(99, 102, 241, 0.18);
+      border-color: rgba(99, 102, 241, 0.45);
+      color: #ffffff;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+    }
+
+    .preset-pill:hover .pill-dot {
+      background-color: #a5b4fc;
+      transform: scale(1.3);
+    }
+
+    /* Submit CTA Button */
+    .action-footer {
+      margin-top: 2.25rem;
+      display: flex;
+      justify-content: center;
+    }
+
+    .luxury-submit-btn {
+      width: 100%;
+      padding: 1.25rem 2rem;
+      background: var(--gradient-main);
+      border: none;
+      border-radius: 16px;
+      color: #ffffff;
+      font-family: inherit;
+      font-size: 1.15rem;
+      font-weight: 800;
+      letter-spacing: -0.01em;
+      cursor: pointer;
+      box-shadow: 0 12px 28px -6px rgba(99, 102, 241, 0.55), 0 0 20px rgba(168, 85, 247, 0.35);
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .luxury-submit-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 18px 36px -6px rgba(99, 102, 241, 0.7), 0 0 28px rgba(236, 72, 153, 0.45);
+    }
+
+    .luxury-submit-btn:active {
+      transform: translateY(0);
+    }
+
+    .luxury-submit-btn:disabled {
+      opacity: 0.65;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .btn-content {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .btn-icon {
+      transition: transform 0.2s;
+    }
+
+    .luxury-submit-btn:hover .btn-icon {
+      transform: rotate(15deg) scale(1.15);
+    }
+
+    /* Loading Box */
+    .luxury-loading {
+      display: none;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 22px;
+      padding: 3.5rem 2rem;
+      text-align: center;
+      margin-bottom: 3.5rem;
+      box-shadow: var(--shadow-lg);
+      animation: fadeIn 0.3s ease-out;
+    }
+
+    .loading-visual {
+      position: relative;
+      width: 76px;
+      height: 76px;
+      margin: 0 auto 1.75rem;
+    }
+
+    .loading-ring {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      border: 3px solid transparent;
+    }
+
+    .loading-ring.outer {
+      border-top-color: var(--accent-indigo);
+      border-right-color: var(--accent-purple);
+      animation: spin 1.4s linear infinite;
+    }
+
+    .loading-ring.middle {
+      top: 9px;
+      left: 9px;
+      width: calc(100% - 18px);
+      height: calc(100% - 18px);
+      border-bottom-color: var(--accent-pink);
+      border-left-color: var(--accent-cyan);
+      animation: spinReverse 1s linear infinite;
+    }
+
+    .loading-sparkle {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 1.5rem;
+      animation: pulseScale 1.5s infinite alternate ease-in-out;
+    }
+
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    @keyframes spinReverse {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(-360deg); }
+    }
+
+    @keyframes pulseScale {
+      0% { transform: translate(-50%, -50%) scale(0.85); opacity: 0.7; }
+      100% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
+    }
+
+    .loading-title {
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: var(--text-head);
+      margin-bottom: 0.5rem;
+    }
+
+    .loading-step-desc {
+      font-size: 1rem;
+      color: #a5b4fc;
+      margin-bottom: 1.75rem;
+    }
+
+    .loading-bar-track {
+      width: 240px;
+      height: 5px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 9999px;
+      margin: 0 auto;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .loading-bar-thumb {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      width: 40%;
+      background: var(--gradient-main);
+      border-radius: 9999px;
+      animation: moveTrack 1.8s infinite ease-in-out;
+    }
+
+    @keyframes moveTrack {
+      0% { left: -40%; width: 30%; }
+      50% { width: 60%; }
+      100% { left: 100%; width: 30%; }
+    }
+
+    /* Results Header */
+    .results-header-bar {
+      margin-bottom: 2.25rem;
+      border-bottom: 1px solid var(--border-subtle);
+      padding-bottom: 1.5rem;
+    }
+
+    .results-badge {
+      display: inline-block;
+      font-size: 0.78rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      color: var(--accent-indigo);
+      background: rgba(99, 102, 241, 0.15);
+      padding: 0.3rem 0.75rem;
+      border-radius: 6px;
+      margin-bottom: 0.75rem;
+    }
+
+    .results-main-title {
+      font-size: 2rem;
+      font-weight: 800;
+      letter-spacing: -0.025em;
+      color: var(--text-head);
+      margin-bottom: 0.5rem;
+    }
+
+    .results-main-title span {
+      color: #c7d2fe;
+    }
+
+    .results-sub {
+      font-size: 1.02rem;
+      color: var(--text-muted);
+    }
+
+    /* Curated Deck (Cards) */
+    .curated-deck {
+      display: flex;
+      flex-direction: column;
+      gap: 2.25rem;
+      margin-bottom: 3.5rem;
+    }
+
+    .curated-card {
+      background: var(--bg-card);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--border-subtle);
+      border-radius: 22px;
+      padding: 2.5rem;
+      position: relative;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: var(--shadow-md);
+      overflow: hidden;
+    }
+
+    .curated-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(99, 102, 241, 0.4);
+      box-shadow: var(--shadow-lg), 0 0 25px rgba(99, 102, 241, 0.2);
+      background: var(--bg-card-hover);
+    }
+
+    /* TOP #1 Grand Highlight Style */
+    .curated-card.rank-1 {
+      background: var(--gradient-card-top1);
+      border-color: rgba(245, 158, 11, 0.45);
+      box-shadow: var(--shadow-lg), var(--shadow-gold);
+    }
+
+    .curated-card.rank-1::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: var(--gradient-gold);
+    }
+
+    .curated-card.rank-1:hover {
+      border-color: rgba(245, 158, 11, 0.75);
+      box-shadow: var(--shadow-lg), 0 0 40px rgba(245, 158, 11, 0.35);
+    }
+
+    /* Card Header */
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.35rem;
+    }
+
+    .rank-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .rank-num {
+      font-size: 0.9rem;
+      font-weight: 800;
+      padding: 0.35rem 0.85rem;
+      border-radius: 8px;
+      letter-spacing: 0.02em;
+    }
+
+    .rank-indicator.rank-1 .rank-num {
+      background: var(--gradient-gold);
+      color: #080b15;
+    }
+
+    .rank-indicator.rank-2 .rank-num {
+      background: rgba(99, 102, 241, 0.22);
+      color: #a5b4fc;
+      border: 1px solid rgba(99, 102, 241, 0.45);
+    }
+
+    .rank-indicator.rank-3 .rank-num {
+      background: rgba(139, 92, 246, 0.22);
+      color: #c4b5fd;
+      border: 1px solid rgba(139, 92, 246, 0.45);
+    }
+
+    .rank-crown {
+      font-size: 0.75rem;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      color: #fbbf24;
+      background: rgba(245, 158, 11, 0.18);
+      border: 1px solid rgba(245, 158, 11, 0.35);
+      padding: 0.25rem 0.65rem;
+      border-radius: 6px;
+    }
+
+    .card-timestamp {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      font-size: 0.86rem;
+      color: var(--text-dim);
+    }
+
+    /* Card Title */
+    .card-title {
+      font-size: 1.55rem;
+      font-weight: 800;
+      line-height: 1.45;
+      letter-spacing: -0.02em;
+      margin-bottom: 1.6rem;
+    }
+
+    .card-title a {
+      color: var(--text-head);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .card-title a:hover {
+      color: #a5b4fc;
+      text-decoration: underline;
+      text-underline-offset: 4px;
+    }
+
+    .curated-card.rank-1 .card-title a:hover {
+      color: #fde68a;
+    }
+
+    /* Curator Insight Box */
+    .curator-insight-box {
+      background: rgba(8, 12, 24, 0.65);
+      border-left: 4px solid var(--accent-indigo);
+      border-radius: 0 14px 14px 0;
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 1.6rem;
+    }
+
+    .curated-card.rank-1 .curator-insight-box {
+      border-left-color: var(--accent-gold);
+      background: rgba(245, 158, 11, 0.08);
+    }
+
+    .insight-label {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.85rem;
+      font-weight: 800;
+      color: #a5b4fc;
+      margin-bottom: 0.5rem;
+    }
+
+    .curated-card.rank-1 .insight-label {
+      color: #fbbf24;
+    }
+
+    .insight-text {
+      font-size: 1rem;
+      color: var(--text-body);
+      line-height: 1.65;
+    }
+
+    .editor-take {
+      margin-top: 0.75rem;
+      padding-top: 0.75rem;
+      border-top: 1px dashed rgba(255, 255, 255, 0.1);
+      font-size: 0.96rem;
+      color: #f1f5f9;
+    }
+
+    .editor-take strong {
+      color: #c7d2fe;
+    }
+
+    /* Summary Section (3-Bullet) */
+    .summary-section {
+      background: rgba(8, 12, 24, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      padding: 1.35rem 1.65rem;
+      margin-bottom: 1.6rem;
+    }
+
+    .summary-title {
+      display: flex;
+      align-items: center;
+      gap: 0.55rem;
+      font-size: 0.92rem;
+      font-weight: 800;
+      color: var(--text-head);
+      margin-bottom: 1.15rem;
+    }
+
+    .summary-steps {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.95rem;
+    }
+
+    .summary-step-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.95rem;
+      font-size: 1.02rem;
+      line-height: 1.7;
+      color: #f8fafc;
+    }
+
+    .step-num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      min-width: 24px;
+      background: rgba(99, 102, 241, 0.25);
+      color: #c7d2fe;
+      font-size: 0.82rem;
+      font-weight: 800;
+      border-radius: 50%;
+      margin-top: 3px;
+    }
+
+    .curated-card.rank-1 .step-num {
+      background: rgba(245, 158, 11, 0.3);
+      color: #fbbf24;
+    }
+
+    .step-text {
+      flex: 1;
+    }
+
+    /* Card Footer */
+    .card-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+      padding-top: 1.35rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .keyword-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .meta-tag {
+      font-size: 0.82rem;
+      color: var(--text-dim);
+      background: rgba(255, 255, 255, 0.06);
+      padding: 0.25rem 0.7rem;
+      border-radius: 6px;
+    }
+
+    .read-original-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: #ffffff;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      padding: 0.65rem 1.35rem;
+      border-radius: 12px;
+      font-size: 0.92rem;
+      font-weight: 700;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+
+    .read-original-btn:hover {
+      background: rgba(99, 102, 241, 0.25);
+      border-color: rgba(99, 102, 241, 0.6);
+      color: #ffffff;
+      transform: translateX(3px);
+    }
+
+    .read-original-btn svg {
+      transition: transform 0.2s;
+    }
+
+    .read-original-btn:hover svg {
+      transform: translate(2px, -2px);
+    }
+
+    /* Raw 20 Articles Accordion */
+    .raw-section {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 18px;
+      overflow: hidden;
+      margin-top: 2.5rem;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .raw-accordion-trigger {
+      width: 100%;
+      padding: 1.35rem 2rem;
+      background: none;
+      border: none;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      color: var(--text-head);
+      font-family: inherit;
+      font-size: 1.05rem;
+      font-weight: 700;
+      text-align: left;
+      transition: background 0.2s;
+    }
+
+    .raw-accordion-trigger:hover {
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    .raw-trigger-title {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .raw-count-chip {
+      font-size: 0.8rem;
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text-muted);
+      padding: 0.2rem 0.65rem;
+      border-radius: 9999px;
+      margin-left: 0.4rem;
+    }
+
+    .accordion-arrow {
+      color: var(--text-dim);
+      display: flex;
+      align-items: center;
+      transition: transform 0.25s;
+    }
+
+    .raw-accordion-trigger.active .accordion-arrow {
+      transform: rotate(180deg);
+    }
+
+    .raw-accordion-body {
+      display: none;
+      padding: 0 2rem 2rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .raw-accordion-body.open {
+      display: block;
+    }
+
+    .raw-intro {
+      font-size: 0.9rem;
+      color: var(--text-dim);
+      margin: 1.25rem 0 1.15rem;
+    }
+
+    .raw-list-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 0.7rem;
+    }
+
+    .raw-row-item {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 0.85rem 1.15rem;
+      background: rgba(8, 12, 24, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      transition: background 0.2s;
+    }
+
+    .raw-row-item:hover {
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .raw-number {
+      font-size: 0.85rem;
+      font-weight: 800;
+      color: var(--text-dim);
+      min-width: 26px;
+    }
+
+    .raw-main {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      gap: 1rem;
+    }
+
+    .raw-link {
+      font-size: 0.96rem;
+      color: var(--text-body);
+      text-decoration: none;
+      transition: color 0.2s;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .raw-link:hover {
+      color: #a5b4fc;
+    }
+
+    .top-selected-badge {
+      font-size: 0.75rem;
+      font-weight: 800;
+      color: #fbbf24;
+      background: rgba(245, 158, 11, 0.18);
+      border: 1px solid rgba(245, 158, 11, 0.35);
+      padding: 0.25rem 0.65rem;
+      border-radius: 6px;
+      white-space: nowrap;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .app-container {
+        padding: 2.25rem 1rem 4rem;
+      }
+      .hero-title {
+        font-size: 2.3rem;
+      }
+      .console-card, .curated-card {
+        padding: 1.5rem;
+      }
+      .card-title {
+        font-size: 1.3rem;
+      }
+      .luxury-submit-btn {
+        font-size: 1.05rem;
+        padding: 1.1rem 1.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-container">
+    
+    <!-- Hero / Header Section -->
+    <header class="hero-header">
+      <div class="hero-badge">
+        <span class="hero-badge-dot"></span>
+        <span class="hero-badge-text">INTELLIGENT NEWS BRIEFING</span>
+      </div>
+      <h1 class="hero-title">
+        <span class="gradient-text">AI 뉴스 큐레이터</span>
+      </h1>
+      <p class="hero-subtitle">
+        실시간 뉴스 20건을 수집하여 나만의 맞춤 기준에 부합하는 <span class="highlight">TOP 3 기사</span>를 엄선하고, 즉시 핵심 3줄 요약 브리핑을 제공합니다.
+      </p>
+    </header>
+
+    <!-- Error Alert Area -->
+    <div id="dynamic-alert-container">
+      {% if error %}
+      <div class="luxury-alert alert-error" id="alert-error-message">
+        <div class="alert-content">
+          <strong>안내:</strong> {{ error }}
+        </div>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Search & Filter Console Section -->
+    <main class="console-card">
+      <form id="search-form" method="POST" action="{% url 'news:index' %}">
+        {% csrf_token %}
+
+        <div class="form-grid">
+          <!-- Keyword Input Area -->
+          <div class="input-panel">
+            <div class="panel-header">
+              <label for="input-keyword" class="panel-label">
+                <span class="label-number">01</span>
+                <span class="label-title">검색 키워드</span>
+              </label>
+              <span class="panel-badge">실시간 기사 20건 수집</span>
+            </div>
+            <div class="input-wrapper">
+              <span class="input-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="11" cy="11" r="8"></circle>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+              </span>
+              <input 
+                type="text" 
+                id="input-keyword" 
+                name="keyword" 
+                class="luxury-input" 
+                placeholder="관심 있는 뉴스 주제나 키워드를 입력하세요 (예: 생성형 AI, 피규어 로봇, 반도체 HBM)" 
+                value="{% firstof keyword default_keyword '' %}" 
+                required
+                autocomplete="off"
+              >
+            </div>
+          </div>
+
+          <!-- Filter Prompt Input Area -->
+          <div class="input-panel">
+            <div class="panel-header">
+              <label for="input-filter-prompt" class="panel-label">
+                <span class="label-number">02</span>
+                <span class="label-title">AI 선별 & 요약 기준 (프롬프트)</span>
+              </label>
+              <span class="panel-badge accent">Gemini AI 엄선</span>
+            </div>
+            <div class="textarea-wrapper">
+              <textarea 
+                id="input-filter-prompt" 
+                name="filter_prompt" 
+                class="luxury-textarea" 
+                rows="3" 
+                placeholder="기사를 어떤 기준으로 골라낼지 자유롭게 입력하세요."
+                required
+              >{% firstof filter_prompt default_filter_prompt '' %}</textarea>
+            </div>
+
+            <!-- Quick Filter Presets -->
+            <div class="preset-section">
+              <div class="preset-label">추천 큐레이션 기준:</div>
+              <div class="preset-tags">
+                <button type="button" class="preset-pill" data-prompt="단순 홍보성 기사는 배제하고, 실제 기술적 혁신 및 산업 파급력이 큰 뉴스 위주로 엄선해줘.">
+                  <span class="pill-dot"></span>
+                  <span>기술 및 비즈니스 혁신</span>
+                </button>
+                <button type="button" class="preset-pill" data-prompt="글로벌 시장 전망, 기업 투자 유치, 주가 및 실적에 중대한 영향을 미치는 뉴스 위주로 골라줘.">
+                  <span class="pill-dot"></span>
+                  <span>시장 전망 & 투자 관점</span>
+                </button>
+                <button type="button" class="preset-pill" data-prompt="보안 취약점, 규제 정책, 저작권 이슈 및 윤리적 쟁점을 다룬 심층 기사만 3개 골라줘.">
+                  <span class="pill-dot"></span>
+                  <span>정책·보안 & 윤리 쟁점</span>
+                </button>
+                <button type="button" class="preset-pill" data-prompt="초보자도 쉽게 이해할 수 있는 실생활 활용 사례 및 대중적 트렌드 중심 기사로 선정해줘.">
+                  <span class="pill-dot"></span>
+                  <span>실생활 활용 & 트렌드</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Submit Button -->
+        <div class="action-footer">
+          <button type="button" id="btn-submit-curate" class="luxury-submit-btn">
+            <span class="btn-content">
+              <svg class="btn-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+              </svg>
+              <span>기사 20건 수집 & AI TOP 3 큐레이션 시작</span>
+            </span>
+          </button>
+        </div>
+      </form>
+    </main>
+
+    <!-- Refined Loading State Box -->
+    <div class="luxury-loading" id="loading-state-box">
+      <div class="loading-visual">
+        <div class="loading-ring outer"></div>
+        <div class="loading-ring middle"></div>
+        <div class="loading-sparkle">✨</div>
+      </div>
+      <h3 class="loading-title">AI 뉴스 큐레이션 분석 중...</h3>
+      <p class="loading-step-desc" id="loading-step-text">실시간 최신 기사 20건을 수집하고 있습니다...</p>
+      <div class="loading-bar-track">
+        <div class="loading-bar-thumb" id="loading-bar-thumb"></div>
+      </div>
+    </div>
+
+    <!-- Results Section -->
+    <div id="results-container">
+      {% if curated_articles %}
+      
+      <!-- Curation Header -->
+      <section class="results-header-bar">
+        <div class="results-title-group">
+          <div class="results-badge">CURATED SELECTION</div>
+          <h2 class="results-main-title">
+            <span>"{{ keyword }}"</span> 관련 AI 엄선 TOP 3 리포트
+          </h2>
+          <p class="results-sub">
+            수집된 20개 기사 중 지정하신 기준에 가장 부합하는 핵심 기사 3건을 엄선하여 브리핑합니다.
+          </p>
+        </div>
+      </section>
+
+      <!-- TOP 3 Curated Cards Grid -->
+      <div class="curated-deck">
+        {% for article in curated_articles %}
+        <article class="curated-card rank-{{ forloop.counter }}">
+          <!-- Card Top Bar -->
+          <div class="card-header">
+            <div class="rank-indicator rank-{{ forloop.counter }}">
+              <span class="rank-num">TOP #{{ forloop.counter }}</span>
+              {% if forloop.counter == 1 %}
+              <span class="rank-crown">BEST PICK</span>
+              {% endif %}
+            </div>
+            <div class="card-timestamp">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+              </svg>
+              <span>{{ article.pub_date }}</span>
+            </div>
+          </div>
+
+          <!-- Article Title -->
+          <h3 class="card-title">
+            <a href="{{ article.link }}" target="_blank" rel="noopener noreferrer">
+              {{ article.title }}
+            </a>
+          </h3>
+
+          <!-- Selection Reason & Editorial Take -->
+          <div class="curator-insight-box">
+            <div class="insight-label">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+              </svg>
+              <span>에디터 선정 근거</span>
+            </div>
+            <p class="insight-text">{{ article.selection_reason }}</p>
+            {% if article.curator_take %}
+            <div class="editor-take">
+              <strong>시사점:</strong> {{ article.curator_take }}
+            </div>
+            {% endif %}
+          </div>
+
+          <!-- 3-Bullet Summary Block -->
+          <div class="summary-section">
+            <div class="summary-title">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="8" y1="6" x2="21" y2="6"></line>
+                <line x1="8" y1="12" x2="21" y2="12"></line>
+                <line x1="8" y1="18" x2="21" y2="18"></line>
+                <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                <line x1="3" y1="18" x2="3.01" y2="18"></line>
+              </svg>
+              <span>핵심 3줄 요약</span>
+            </div>
+            <ol class="summary-steps">
+              {% for point in article.summary_points %}
+              <li class="summary-step-item">
+                <span class="step-num">{{ forloop.counter }}</span>
+                <span class="step-text">{{ point }}</span>
+              </li>
+              {% empty %}
+              <li class="summary-step-item">
+                <span class="step-num">1</span>
+                <span class="step-text">{{ article.description }}</span>
+              </li>
+              {% endfor %}
+            </ol>
+          </div>
+
+          <!-- Card Footer (Tags & Action) -->
+          <div class="card-footer">
+            <div class="keyword-tags">
+              {% for tag in article.keywords %}
+              <span class="meta-tag">#{{ tag }}</span>
+              {% endfor %}
+            </div>
+            <a href="{{ article.link }}" target="_blank" rel="noopener noreferrer" class="read-original-btn">
+              <span>기사 전문 보기</span>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="7" y1="17" x2="17" y2="7"></line>
+                <polyline points="7 7 17 7 17 17"></polyline>
+              </svg>
+            </a>
+          </div>
+        </article>
+        {% endfor %}
+      </div>
+
+      <!-- Raw Articles Accordion -->
+      {% if all_articles %}
+      <div class="raw-section" id="accordion-20-section">
+        <button type="button" class="raw-accordion-trigger" id="accordion-20-header">
+          <div class="raw-trigger-title">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+              <polyline points="10 9 9 9 8 9"></polyline>
+            </svg>
+            <span>분석 대상 전체 기사 목록</span>
+            <span class="raw-count-chip">{{ all_articles|length }}건</span>
+          </div>
+          <span class="accordion-arrow" id="accordion-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </span>
+        </button>
+        <div class="raw-accordion-body" id="accordion-20-content">
+          <p class="raw-intro">
+            아래 전체 기사 20건을 바탕으로 AI가 심층 분석하여 위의 TOP 3 기사를 선정하였습니다.
+          </p>
+          <div class="raw-list-grid">
+            {% for item in all_articles %}
+            <div class="raw-row-item">
+              <span class="raw-number">{{ item.id }}</span>
+              <div class="raw-main">
+                <a href="{{ item.link }}" target="_blank" rel="noopener noreferrer" class="raw-link">
+                  {{ item.title }}
+                </a>
+                {% for sel in curated_articles %}
+                  {% if sel.id == item.id %}
+                  <span class="top-selected-badge">⭐ TOP {{ forloop.counter }} 선정</span>
+                  {% endif %}
+                {% endfor %}
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+      {% endif %}
+
+      {% endif %}
+    </div>
+
+  </div>
+
+  <!-- Guaranteed Inline Script (캐시 지연 없이 100% 즉시 동작) -->
+  <script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const keywordInput = document.getElementById("input-keyword");
+    const filterPromptInput = document.getElementById("input-filter-prompt");
+    const submitBtn = document.getElementById("btn-submit-curate");
+    const loadingBox = document.getElementById("loading-state-box");
+    const loadingStepText = document.getElementById("loading-step-text");
+    const resultsContainer = document.getElementById("results-container");
+    const alertContainer = document.getElementById("dynamic-alert-container");
+
+    // Preset filter pills click
+    const presetPills = document.querySelectorAll(".preset-pill");
+    presetPills.forEach(function (pill) {
+      pill.addEventListener("click", function () {
+        const promptText = pill.getAttribute("data-prompt");
+        if (promptText && filterPromptInput) {
+          filterPromptInput.value = promptText;
+          filterPromptInput.focus();
+        }
+      });
+    });
+
+    // Helper: Get CSRF Token
+    function getCsrfToken() {
+      const csrfInput = document.querySelector("[name=csrfmiddlewaretoken]");
+      return csrfInput ? csrfInput.value : "";
+    }
+
+    // Helper: Execute Curation via fetch AJAX
+    async function executeCuration() {
+      const keyword = keywordInput.value.trim();
+      const filterPrompt = filterPromptInput.value.trim();
+
+      if (!keyword) {
+        alert("검색 키워드를 입력해 주세요.");
+        keywordInput.focus();
+        return;
+      }
+
+      if (!filterPrompt) {
+        alert("AI 선별 프롬프트를 입력해 주세요.");
+        filterPromptInput.focus();
+        return;
+      }
+
+      // UI State: Loading on
+      if (alertContainer) alertContainer.innerHTML = "";
+      if (loadingBox) loadingBox.style.display = "block";
+      if (resultsContainer) resultsContainer.style.opacity = "0.2";
+
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = `
+          <span class="btn-content">
+            <svg style="animation: spin 1s linear infinite; width: 1.3rem; height: 1.3rem; display: inline-block;" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <circle cx="12" cy="12" r="10" stroke-width="4" stroke="currentColor" stroke-dasharray="32" stroke-linecap="round"></circle>
+            </svg>
+            <span>AI 큐레이션 및 요약 분석 중...</span>
+          </span>
+        `;
+      }
+
+      let step = 0;
+      const steps = [
+        "실시간 최신 기사 20건을 수집하고 있습니다...",
+        "AI가 필터링 기준에 맞춰 20개 기사를 다각도 심층 분석 중입니다...",
+        "최적의 기사 3개 엄선 및 본문 3줄 핵심 요약을 작성하고 있습니다..."
+      ];
+
+      if (loadingStepText) loadingStepText.textContent = steps[0];
+
+      const stepInterval = setInterval(function () {
+        step++;
+        if (step < steps.length && loadingStepText) {
+          loadingStepText.textContent = steps[step];
+        }
+      }, 2800);
+
+      try {
+        const response = await fetch("/", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": getCsrfToken(),
+            "X-Requested-With": "XMLHttpRequest",
+          },
+          body: JSON.stringify({
+            keyword: keyword,
+            filter_prompt: filterPrompt
+          }),
+        });
+
+        clearInterval(stepInterval);
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+          throw new Error(data.error || "처리 중 오류가 발생했습니다.");
+        }
+
+        renderResults(data);
+
+        if (resultsContainer) {
+          resultsContainer.style.opacity = "1";
+          resultsContainer.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+
+      } catch (err) {
+        clearInterval(stepInterval);
+        showErrorAlert(err.message);
+        if (resultsContainer) resultsContainer.style.opacity = "1";
+      } finally {
+        if (loadingBox) loadingBox.style.display = "none";
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = `
+            <span class="btn-content">
+              <svg class="btn-icon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+              </svg>
+              <span>기사 20건 수집 & AI TOP 3 큐레이션 시작</span>
+            </span>
+          `;
+        }
+      }
+    }
+
+    // Render HTML for results
+    function renderResults(data) {
+      if (!resultsContainer) return;
+
+      let cardsHtml = "";
+      data.curated_articles.forEach(function (article, index) {
+        const rank = index + 1;
+        const rankClass = "rank-" + rank;
+        const bestBadge = rank === 1 ? '<span class="rank-crown">BEST PICK</span>' : '';
+
+        let summaryItems = "";
+        if (article.summary_points && article.summary_points.length > 0) {
+          summaryItems = article.summary_points.map(function (pt, i) {
+            return `
+              <li class="summary-step-item">
+                <span class="step-num">${i + 1}</span>
+                <span class="step-text">${escapeHtml(pt)}</span>
+              </li>
+            `;
+          }).join("");
+        } else {
+          summaryItems = `
+            <li class="summary-step-item">
+              <span class="step-num">1</span>
+              <span class="step-text">${escapeHtml(article.description || "기사 원문을 참조해 주시기 바랍니다.")}</span>
+            </li>
+          `;
+        }
+
+        let tagsHtml = "";
+        if (article.keywords && article.keywords.length > 0) {
+          tagsHtml = article.keywords.map(function (kw) {
+            return `<span class="meta-tag">#${escapeHtml(kw)}</span>`;
+          }).join("");
+        }
+
+        let curatorTakeHtml = "";
+        if (article.curator_take) {
+          curatorTakeHtml = `
+            <div class="editor-take">
+              <strong>시사점:</strong> ${escapeHtml(article.curator_take)}
+            </div>
+          `;
+        }
+
+        cardsHtml += `
+          <article class="curated-card ${rankClass}">
+            <div class="card-header">
+              <div class="rank-indicator ${rankClass}">
+                <span class="rank-num">TOP #${rank}</span>
+                ${bestBadge}
+              </div>
+              <div class="card-timestamp">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+                <span>${escapeHtml(article.pub_date || "")}</span>
+              </div>
+            </div>
+
+            <h3 class="card-title">
+              <a href="${escapeHtml(article.link)}" target="_blank" rel="noopener noreferrer">
+                ${escapeHtml(article.title)}
+              </a>
+            </h3>
+
+            <div class="curator-insight-box">
+              <div class="insight-label">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+                </svg>
+                <span>에디터 선정 근거</span>
+              </div>
+              <p class="insight-text">${escapeHtml(article.selection_reason)}</p>
+              ${curatorTakeHtml}
+            </div>
+
+            <div class="summary-section">
+              <div class="summary-title">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="8" y1="6" x2="21" y2="6"></line>
+                  <line x1="8" y1="12" x2="21" y2="12"></line>
+                  <line x1="8" y1="18" x2="21" y2="18"></line>
+                  <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                  <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                  <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                </svg>
+                <span>핵심 3줄 요약</span>
+              </div>
+              <ol class="summary-steps">
+                ${summaryItems}
+              </ol>
+            </div>
+
+            <div class="card-footer">
+              <div class="keyword-tags">
+                ${tagsHtml}
+              </div>
+              <a href="${escapeHtml(article.link)}" target="_blank" rel="noopener noreferrer" class="read-original-btn">
+                <span>기사 전문 보기</span>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="7" y1="17" x2="17" y2="7"></line>
+                  <polyline points="7 7 17 7 17 17"></polyline>
+                </svg>
+              </a>
+            </div>
+          </article>
+        `;
+      });
+
+      let rawListHtml = "";
+      if (data.all_articles && data.all_articles.length > 0) {
+        const selectedIds = new Set(data.curated_articles.map(function(a) { return a.id; }));
+
+        const itemsHtml = data.all_articles.map(function (item) {
+          const isSel = selectedIds.has(item.id);
+          const selBadge = isSel ? '<span class="top-selected-badge">⭐ TOP 선정</span>' : '';
+
+          return `
+            <div class="raw-row-item">
+              <span class="raw-number">${item.id}</span>
+              <div class="raw-main">
+                <a href="${escapeHtml(item.link)}" target="_blank" rel="noopener noreferrer" class="raw-link">${escapeHtml(item.title)}</a>
+                ${selBadge}
+              </div>
+            </div>
+          `;
+        }).join("");
+
+        rawListHtml = `
+          <div class="raw-section" id="accordion-20-section">
+            <button type="button" class="raw-accordion-trigger" id="accordion-20-header">
+              <div class="raw-trigger-title">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline points="14 2 14 8 20 8"></polyline>
+                  <line x1="16" y1="13" x2="8" y2="13"></line>
+                  <line x1="16" y1="17" x2="8" y2="17"></line>
+                  <polyline points="10 9 9 9 8 9"></polyline>
+                </svg>
+                <span>분석 대상 전체 기사 목록</span>
+                <span class="raw-count-chip">${data.all_articles.length}건</span>
+              </div>
+              <span class="accordion-arrow" id="accordion-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+              </span>
+            </button>
+            <div class="raw-accordion-body" id="accordion-20-content">
+              <p class="raw-intro">
+                아래 전체 기사 ${data.all_articles.length}건을 바탕으로 AI가 심층 분석하여 위의 TOP 3 기사를 선정하였습니다.
+              </p>
+              <div class="raw-list-grid">
+                ${itemsHtml}
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      resultsContainer.innerHTML = `
+        <section class="results-header-bar">
+          <div class="results-title-group">
+            <div class="results-badge">CURATED SELECTION</div>
+            <h2 class="results-main-title">
+              <span>"${escapeHtml(data.keyword)}"</span> 관련 AI 엄선 TOP 3 리포트
+            </h2>
+            <p class="results-sub">
+              수집된 20개 기사 중 지정하신 기준에 가장 부합하는 핵심 기사 3건을 엄선하여 브리핑합니다.
+            </p>
+          </div>
+        </section>
+
+        <div class="curated-deck">
+          ${cardsHtml}
+        </div>
+
+        ${rawListHtml}
+      `;
+
+      bindAccordion();
+    }
+
+    // Accordion toggle
+    function bindAccordion() {
+      const trigger = document.getElementById("accordion-20-header");
+      const body = document.getElementById("accordion-20-content");
+
+      if (trigger && body) {
+        trigger.addEventListener("click", function () {
+          const isOpen = body.classList.contains("open");
+          if (isOpen) {
+            body.classList.remove("open");
+            trigger.classList.remove("active");
+          } else {
+            body.classList.add("open");
+            trigger.classList.add("active");
+          }
+        });
+      }
+    }
+
+    // Show error alert
+    function showErrorAlert(message) {
+      if (!alertContainer) return;
+
+      alertContainer.innerHTML = `
+        <div class="luxury-alert alert-error" id="alert-error-message">
+          <div class="alert-content">
+            <strong>안내:</strong> ${escapeHtml(message)}
+          </div>
+        </div>
+      `;
+
+      alertContainer.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    // Escape HTML
+    function escapeHtml(str) {
+      if (!str) return "";
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+
+    // Submit button event
+    if (submitBtn) {
+      submitBtn.addEventListener("click", function () {
+        executeCuration();
+      });
+    }
+
+    bindAccordion();
+  });
+  </script>
+</body>
+</html>
