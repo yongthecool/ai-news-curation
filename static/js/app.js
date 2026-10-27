@@ -91,7 +91,18 @@ document.addEventListener("DOMContentLoaded", () => {
       });
 
       clearInterval(stepInterval);
-      const data = await response.json();
+
+      let data;
+      const contentType = response.headers.get("content-type");
+      if (contentType && contentType.includes("application/json")) {
+        data = await response.json();
+      } else {
+        throw new Error(
+          response.status === 504 || response.status === 502
+            ? "AI 분석 처리 시간이 길어져 일시적으로 응답이 지연되었습니다. 잠시 후 다시 시도해 주세요."
+            : `서버 재시작 또는 일시적 통신 지연입니다 (코드: ${response.status}). 잠시 후 다시 시도해 주세요.`
+        );
+      }
 
       if (!response.ok || !data.success) {
         throw new Error(data.error || "처리 중 오류가 발생했습니다.");
@@ -107,7 +118,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     } catch (err) {
       clearInterval(stepInterval);
-      showErrorAlert(err.message);
+      showErrorAlert(err.message || "요청 처리 중 오류가 발생했습니다.");
       if (resultsContainer) resultsContainer.style.opacity = "1";
     } finally {
       if (loadingBox) loadingBox.style.display = "none";
