@@ -11,7 +11,7 @@ wheels/
 
 # Environment variables & DB
 .env
-*.sqlite3
+#*.sqlite3
 
 # Static files
 staticfiles/

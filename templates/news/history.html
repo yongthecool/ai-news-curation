@@ -1,0 +1,761 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>나의 요약 히스토리 - AI News Curator</title>
+  <meta name="description" content="AI가 큐레이션하고 요약한 나만의 뉴스 요약 아카이브">
+
+  <!-- Fonts: Pretendard & Plus Jakarta Sans -->
+  <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg-main: #0a0d18;
+      --bg-surface: #10162a;
+      --bg-card: rgba(16, 22, 42, 0.85);
+      --bg-card-hover: rgba(23, 32, 60, 0.95);
+      --border-subtle: rgba(255, 255, 255, 0.1);
+      --border-accent: rgba(99, 102, 241, 0.4);
+      --border-focus: #6366f1;
+
+      --text-pure: #ffffff;
+      --text-head: #f8fafc;
+      --text-body: #cbd5e1;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+
+      --accent-indigo: #6366f1;
+      --accent-purple: #8b5cf6;
+      --accent-pink: #ec4899;
+      --accent-cyan: #06b6d4;
+      --accent-gold: #f59e0b;
+      --accent-danger: #ef4444;
+
+      --gradient-main: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #ec4899 100%);
+      --gradient-danger: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+
+      --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.3);
+      --shadow-md: 0 12px 28px -6px rgba(0, 0, 0, 0.5);
+      --shadow-lg: 0 20px 45px -10px rgba(0, 0, 0, 0.65);
+      --shadow-glow: 0 0 30px rgba(99, 102, 241, 0.25);
+
+      --font-family: 'Pretendard', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-family);
+      background-color: var(--bg-main);
+      color: var(--text-body);
+      line-height: 1.65;
+      min-height: 100vh;
+      overflow-x: hidden;
+      background-image: 
+        radial-gradient(circle at 15% 15%, rgba(99, 102, 241, 0.16) 0%, transparent 45%),
+        radial-gradient(circle at 85% 25%, rgba(139, 92, 246, 0.14) 0%, transparent 45%),
+        radial-gradient(circle at 50% 80%, rgba(236, 72, 153, 0.1) 0%, transparent 50%);
+      background-attachment: fixed;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .app-container {
+      max-width: 1040px;
+      margin: 0 auto;
+      padding: 3rem 1.5rem 6rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Top Nav Bar */
+    .top-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2.5rem;
+      padding-bottom: 1.25rem;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      text-decoration: none;
+      color: var(--text-pure);
+      font-weight: 800;
+      font-size: 1.15rem;
+    }
+
+    .nav-brand-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      background: var(--gradient-main);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      box-shadow: var(--shadow-glow);
+    }
+
+    .nav-actions {
+      display: flex;
+      gap: 0.75rem;
+      align-items: center;
+    }
+
+    .nav-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.65rem 1.25rem;
+      border-radius: 10px;
+      font-size: 0.92rem;
+      font-weight: 700;
+      text-decoration: none;
+      transition: all 0.25s ease;
+      cursor: pointer;
+    }
+
+    .nav-btn-secondary {
+      background: rgba(255, 255, 255, 0.07);
+      color: var(--text-pure);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+    }
+
+    .nav-btn-secondary:hover {
+      background: rgba(99, 102, 241, 0.2);
+      border-color: rgba(99, 102, 241, 0.5);
+      transform: translateY(-1px);
+    }
+
+    .nav-btn-primary {
+      background: var(--gradient-main);
+      color: #ffffff;
+      border: none;
+      box-shadow: 0 4px 15px rgba(99, 102, 241, 0.35);
+    }
+
+    .nav-btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(99, 102, 241, 0.5);
+    }
+
+    /* Page Header */
+    .page-header {
+      margin-bottom: 2.75rem;
+    }
+
+    .header-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.35rem 0.9rem;
+      background: rgba(99, 102, 241, 0.15);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      border-radius: 9999px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #a5b4fc;
+      margin-bottom: 0.85rem;
+    }
+
+    .page-title {
+      font-size: 2.25rem;
+      font-weight: 800;
+      color: var(--text-head);
+      letter-spacing: -0.025em;
+      margin-bottom: 0.6rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .gradient-text {
+      background: var(--gradient-main);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .count-chip {
+      font-size: 0.9rem;
+      font-weight: 700;
+      padding: 0.25rem 0.8rem;
+      background: rgba(99, 102, 241, 0.25);
+      border: 1px solid rgba(99, 102, 241, 0.45);
+      color: #c7d2fe;
+      border-radius: 9999px;
+      vertical-align: middle;
+    }
+
+    .page-desc {
+      font-size: 1.05rem;
+      color: var(--text-muted);
+    }
+
+    /* History Cards Grid */
+    .history-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 2rem;
+    }
+
+    .history-card {
+      background: var(--bg-card);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--border-subtle);
+      border-radius: 20px;
+      padding: 2rem;
+      box-shadow: var(--shadow-md);
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .history-card::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      background: var(--gradient-main);
+      opacity: 0.8;
+    }
+
+    .history-card:hover {
+      background: var(--bg-card-hover);
+      border-color: rgba(99, 102, 241, 0.4);
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-lg), 0 0 25px rgba(99, 102, 241, 0.15);
+    }
+
+    .card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .meta-group {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .keyword-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: #c7d2fe;
+      background: rgba(99, 102, 241, 0.2);
+      border: 1px solid rgba(99, 102, 241, 0.35);
+      padding: 0.25rem 0.7rem;
+      border-radius: 6px;
+    }
+
+    .time-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.82rem;
+      color: var(--text-dim);
+    }
+
+    .card-title {
+      font-size: 1.45rem;
+      font-weight: 800;
+      line-height: 1.4;
+      margin-bottom: 1.25rem;
+      color: var(--text-head);
+    }
+
+    .card-title a {
+      color: inherit;
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .card-title a:hover {
+      color: #a5b4fc;
+    }
+
+    /* Curator Insight Box */
+    .insight-box {
+      background: rgba(99, 102, 241, 0.08);
+      border: 1px solid rgba(99, 102, 241, 0.2);
+      border-radius: 12px;
+      padding: 1rem 1.25rem;
+      margin-bottom: 1.35rem;
+    }
+
+    .insight-title {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: #a5b4fc;
+      margin-bottom: 0.4rem;
+    }
+
+    .insight-content {
+      font-size: 0.95rem;
+      color: #e2e8f0;
+      line-height: 1.55;
+    }
+
+    .insight-take {
+      margin-top: 0.5rem;
+      font-size: 0.9rem;
+      color: #cbd5e1;
+      padding-top: 0.4rem;
+      border-top: 1px dashed rgba(255, 255, 255, 0.1);
+    }
+
+    /* 3-Bullet Summary Block */
+    .summary-box {
+      background: rgba(8, 11, 21, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 14px;
+      padding: 1.35rem 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .summary-heading {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.9rem;
+      font-weight: 800;
+      color: #c7d2fe;
+      margin-bottom: 1rem;
+      letter-spacing: 0.02em;
+    }
+
+    .summary-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+    }
+
+    .summary-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.85rem;
+      font-size: 0.98rem;
+      color: #f1f5f9;
+      line-height: 1.6;
+    }
+
+    .item-bullet {
+      width: 22px;
+      height: 22px;
+      min-width: 22px;
+      border-radius: 50%;
+      background: rgba(99, 102, 241, 0.25);
+      border: 1px solid rgba(99, 102, 241, 0.4);
+      color: #c7d2fe;
+      font-size: 0.78rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 2px;
+    }
+
+    /* Card Actions */
+    .card-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 1.25rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+
+    .read-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(255, 255, 255, 0.07);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #ffffff;
+      padding: 0.6rem 1.25rem;
+      border-radius: 10px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+
+    .read-btn:hover {
+      background: rgba(99, 102, 241, 0.25);
+      border-color: rgba(99, 102, 241, 0.6);
+      transform: translateX(2px);
+    }
+
+    .delete-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.25);
+      color: #fca5a5;
+      padding: 0.55rem 1rem;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .delete-btn:hover {
+      background: rgba(239, 68, 68, 0.25);
+      border-color: rgba(239, 68, 68, 0.6);
+      color: #ffffff;
+    }
+
+    /* Empty State */
+    .empty-state {
+      background: var(--bg-card);
+      border: 1px dashed var(--border-subtle);
+      border-radius: 24px;
+      padding: 4.5rem 2rem;
+      text-align: center;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .empty-icon {
+      width: 76px;
+      height: 76px;
+      border-radius: 20px;
+      background: rgba(99, 102, 241, 0.12);
+      border: 1px solid rgba(99, 102, 241, 0.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.2rem;
+      margin: 0 auto 1.5rem;
+    }
+
+    .empty-title {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--text-head);
+      margin-bottom: 0.6rem;
+    }
+
+    .empty-desc {
+      font-size: 1rem;
+      color: var(--text-muted);
+      max-width: 480px;
+      margin: 0 auto 2rem;
+      line-height: 1.6;
+    }
+
+    /* Toast Notification */
+    .toast-container {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .toast {
+      background: #1e293b;
+      color: #ffffff;
+      border: 1px solid rgba(99, 102, 241, 0.4);
+      padding: 0.9rem 1.4rem;
+      border-radius: 12px;
+      box-shadow: var(--shadow-lg);
+      font-size: 0.92rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      animation: toastIn 0.3s ease;
+    }
+
+    @keyframes toastIn {
+      from { opacity: 0; transform: translateY(15px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 768px) {
+      .app-container {
+        padding: 2rem 1rem 4rem;
+      }
+      .page-title {
+        font-size: 1.75rem;
+      }
+      .history-card {
+        padding: 1.35rem;
+      }
+      .card-title {
+        font-size: 1.2rem;
+      }
+      .top-nav {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="app-container">
+
+    <!-- Top Navigation -->
+    <nav class="top-nav">
+      <a href="{% url 'news:index' %}" class="nav-brand">
+        <span class="nav-brand-icon">⚡</span>
+        <span>AI News Curator</span>
+      </a>
+      <div class="nav-actions">
+        <a href="{% url 'news:index' %}" class="nav-btn nav-btn-primary">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+          <span>새 뉴스 큐레이션하기</span>
+        </a>
+      </div>
+    </nav>
+
+    <!-- Page Header -->
+    <header class="page-header">
+      <div class="header-badge">
+        <span>ARCHIVED SUMMARIES</span>
+      </div>
+      <h1 class="page-title">
+        <span class="gradient-text">나의 요약 히스토리</span>
+        <span class="count-chip" id="summary-count-chip">총 {{ total_count }}건</span>
+      </h1>
+      <p class="page-desc">
+        AI가 선별하고 3줄 요약한 기사들을 한눈에 다시 확인하고 간편하게 관리하세요.
+      </p>
+    </header>
+
+    <!-- Main Content Area -->
+    <main>
+      {% if summaries %}
+      <div class="history-grid" id="history-list">
+        {% for item in summaries %}
+        <article class="history-card" id="card-item-{{ item.id }}">
+          
+          <!-- Card Top Bar -->
+          <div class="card-top">
+            <div class="meta-group">
+              {% if item.keyword %}
+              <span class="keyword-badge">#{{ item.keyword }}</span>
+              {% endif %}
+              <span class="time-badge">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+                <span>{{ item.created_at|date:"Y.m.d H:i" }}</span>
+              </span>
+            </div>
+
+            <!-- Delete Button -->
+            <button type="button" class="delete-btn" onclick="deleteItem({{ item.id }})">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="3 6 5 6 21 6"></polyline>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+              </svg>
+              <span>삭제</span>
+            </button>
+          </div>
+
+          <!-- Article Title -->
+          <h2 class="card-title">
+            {% if item.news_url %}
+            <a href="{{ item.news_url }}" target="_blank" rel="noopener noreferrer">
+              {{ item.title }}
+            </a>
+            {% else %}
+            <span>{{ item.title }}</span>
+            {% endif %}
+          </h2>
+
+          <!-- Curator Insight (if present) -->
+          {% if item.selection_reason or item.curator_take %}
+          <div class="insight-box">
+            {% if item.selection_reason %}
+            <div class="insight-title">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="16" x2="12" y2="12"></line>
+                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+              </svg>
+              <span>에디터 선정 근거</span>
+            </div>
+            <p class="insight-content">{{ item.selection_reason }}</p>
+            {% endif %}
+
+            {% if item.curator_take %}
+            <div class="insight-take">
+              <strong>시사점:</strong> {{ item.curator_take }}
+            </div>
+            {% endif %}
+          </div>
+          {% endif %}
+
+          <!-- Summary Body -->
+          <div class="summary-box">
+            <div class="summary-heading">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="8" y1="6" x2="21" y2="6"></line>
+                <line x1="8" y1="12" x2="21" y2="12"></line>
+                <line x1="8" y1="18" x2="21" y2="18"></line>
+                <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                <line x1="3" y1="18" x2="3.01" y2="18"></line>
+              </svg>
+              <span>핵심 3줄 요약</span>
+            </div>
+            <ul class="summary-list">
+              {% for line in item.summary_lines %}
+              <li class="summary-item">
+                <span class="item-bullet">{{ forloop.counter }}</span>
+                <span>{{ line }}</span>
+              </li>
+              {% empty %}
+              <li class="summary-item">
+                <span class="item-bullet">1</span>
+                <span>{{ item.summary }}</span>
+              </li>
+              {% endfor %}
+            </ul>
+          </div>
+
+          <!-- Card Footer -->
+          <div class="card-footer">
+            {% if item.news_url %}
+            <a href="{{ item.news_url }}" target="_blank" rel="noopener noreferrer" class="read-btn">
+              <span>기사 전문 보기</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="7" y1="17" x2="17" y2="7"></line>
+                <polyline points="7 7 17 7 17 17"></polyline>
+              </svg>
+            </a>
+            {% else %}
+            <span></span>
+            {% endif %}
+
+            <span style="font-size: 0.8rem; color: var(--text-dim);">ID #{{ item.id }}</span>
+          </div>
+
+        </article>
+        {% endfor %}
+      </div>
+
+      {% else %}
+      
+      <!-- Empty State -->
+      <div class="empty-state" id="empty-state-box">
+        <div class="empty-icon">📂</div>
+        <h2 class="empty-title">아직 저장된 뉴스 요약이 없습니다</h2>
+        <p class="empty-desc">
+          관심 있는 키워드로 최신 뉴스를 큐레이션하고,<br>
+          마음에 드는 요약 결과를 저장하여 나만의 히스토리를 채워보세요.
+        </p>
+        <a href="{% url 'news:index' %}" class="nav-btn nav-btn-primary" style="display: inline-flex;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+          </svg>
+          <span>첫 뉴스 큐레이션 시작하기</span>
+        </a>
+      </div>
+      {% endif %}
+    </main>
+
+  </div>
+
+  <!-- Toast Container -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <script>
+    function showToast(message, isSuccess = true) {
+      const container = document.getElementById("toast-container");
+      const toast = document.createElement("div");
+      toast.className = "toast";
+      toast.innerHTML = `
+        <span>${isSuccess ? "✅" : "⚠️"}</span>
+        <span>${message}</span>
+      `;
+      container.appendChild(toast);
+      setTimeout(() => {
+        toast.style.transition = "opacity 0.3s ease, transform 0.3s ease";
+        toast.style.opacity = "0";
+        toast.style.transform = "translateY(10px)";
+        setTimeout(() => toast.remove(), 300);
+      }, 3000);
+    }
+
+    async function deleteItem(id) {
+      if (!confirm("이 요약 기사를 히스토리에서 삭제하시겠습니까?")) {
+        return;
+      }
+
+      try {
+        const response = await fetch(`/history/${id}/delete/`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Requested-With": "XMLHttpRequest",
+          }
+        });
+
+        const data = await response.json();
+        if (response.ok && data.success) {
+          const card = document.getElementById(`card-item-${id}`);
+          if (card) {
+            card.style.transition = "opacity 0.3s ease, transform 0.3s ease";
+            card.style.opacity = "0";
+            card.style.transform = "scale(0.95)";
+            setTimeout(() => {
+              card.remove();
+              const remaining = document.querySelectorAll(".history-card").length;
+              const chip = document.getElementById("summary-count-chip");
+              if (chip) chip.textContent = `총 ${remaining}건`;
+
+              if (remaining === 0) {
+                location.reload();
+              }
+            }, 300);
+          }
+          showToast(data.message || "삭제되었습니다.");
+        } else {
+          showToast(data.error || "삭제에 실패했습니다.", false);
+        }
+      } catch (err) {
+        showToast("네트워크 오류가 발생했습니다.", false);
+      }
+    }
+  </script>
+</body>
+</html>
