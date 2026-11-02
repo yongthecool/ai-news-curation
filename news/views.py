@@ -6,6 +6,9 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.http import JsonResponse
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth import login, logout, authenticate
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from .models import NewsSummary
 from .services.naver_search import NaverSearchService
 from .services.gemini_curator import GeminiCuratorService
@@ -26,6 +29,78 @@ def check_api_keys():
 DEFAULT_KEYWORD = "생성형 AI 인공지능"
 DEFAULT_FILTER_PROMPT = "단순 행사나 홍보성 기사는 제외하고, 실제 기술적 혁신이나 비즈니스 파급력이 큰 기사 위주로 골라줘."
 
+
+# ==========================================
+# 1. 사용자 인증 뷰 (로그인 / 회원가입 / 로그아웃)
+# ==========================================
+
+@require_http_methods(["GET", "POST"])
+def login_view(request):
+    """사용자 로그인 뷰"""
+    if request.user.is_authenticated:
+        return redirect("news:index")
+
+    next_url = request.POST.get("next") or request.GET.get("next") or "news:index"
+    error = None
+
+    if request.method == "POST":
+        form = AuthenticationForm(request, data=request.POST)
+        if form.is_valid():
+            user = form.get_user()
+            login(request, user)
+            return redirect(next_url)
+        else:
+            error = "아이디 또는 비밀번호가 올바르지 않습니다."
+    else:
+        form = AuthenticationForm()
+
+    return render(request, "news/login.html", {
+        "form": form,
+        "error": error,
+        "next": next_url
+    })
+
+
+@require_http_methods(["GET", "POST"])
+def signup_view(request):
+    """사용자 회원가입 뷰"""
+    if request.user.is_authenticated:
+        return redirect("news:index")
+
+    error = None
+    if request.method == "POST":
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            user = form.save()
+            login(request, user)
+            return redirect("news:index")
+        else:
+            errors_list = []
+            for field, errs in form.errors.items():
+                for e in errs:
+                    errors_list.append(e)
+            error = " ".join(errors_list)
+    else:
+        form = UserCreationForm()
+
+    return render(request, "news/signup.html", {
+        "form": form,
+        "error": error
+    })
+
+
+@require_http_methods(["GET", "POST"])
+def logout_view(request):
+    """사용자 로그아웃 뷰"""
+    logout(request)
+    return redirect("news:login")
+
+
+# ==========================================
+# 2. 메인 뉴스 큐레이션 서비스 뷰
+# ==========================================
+
+@login_required(login_url="news:login")
 @csrf_exempt
 @require_http_methods(["GET", "POST"])
 def index(request):
@@ -35,7 +110,7 @@ def index(request):
         "api_status": api_status,
         "default_keyword": DEFAULT_KEYWORD,
         "default_filter_prompt": DEFAULT_FILTER_PROMPT,
-        "saved_count": NewsSummary.objects.count(),
+        "saved_count": NewsSummary.objects.filter(user=request.user).count(),
     }
 
     if request.method == "POST":
@@ -80,7 +155,7 @@ def index(request):
             })
 
         try:
-            # 1. 네이버 검색 API로 20개 기사 검색 (네이버 키 오류 시 입력 키워드 기반 스마트 폴백)
+            # 1. 네이버 검색 API로 20개 기사 검색
             search_result = NaverSearchService.search_news(
                 query=keyword, 
                 display=20, 
@@ -120,7 +195,6 @@ def index(request):
                 "source_notice": source_notice
             }
 
-
             if is_ajax:
                 return JsonResponse({"success": True, **context})
             return render(request, "news/index.html", context)
@@ -142,7 +216,6 @@ def index(request):
                 "filter_prompt": filter_prompt
             })
 
-
     # GET 요청
     return render(request, "news/index.html", {
         **base_context,
@@ -151,12 +224,23 @@ def index(request):
     })
 
 
+# ==========================================
+# 3. 요약 저장 및 히스토리 관리 뷰
+# ==========================================
+
 @csrf_exempt
 @require_http_methods(["POST"])
 def save_summary(request):
     """
-    요약 결과 저장 API (단일 기사 또는 다중 기사 일괄 저장 지원)
+    요약 결과 저장 API (로그인 사용자 전용)
     """
+    if not request.user.is_authenticated:
+        return JsonResponse({
+            "success": False, 
+            "error": "로그인이 필요한 서비스입니다.",
+            "redirect": "/login/"
+        }, status=401)
+
     try:
         if request.content_type == "application/json":
             body = json.loads(request.body)
@@ -186,6 +270,7 @@ def save_summary(request):
 
             if title and summary:
                 item = NewsSummary.objects.create(
+                    user=request.user,
                     title=title,
                     summary=summary,
                     news_url=news_url,
@@ -199,7 +284,7 @@ def save_summary(request):
             "success": True,
             "message": f"총 {len(saved_items)}건의 요약 기사가 성공적으로 저장되었습니다.",
             "saved_count": len(saved_items),
-            "total_saved": NewsSummary.objects.count()
+            "total_saved": NewsSummary.objects.filter(user=request.user).count()
         })
 
     # 2. 단일 기사 저장
@@ -220,8 +305,8 @@ def save_summary(request):
     if not summary:
         return JsonResponse({"success": False, "error": "요약 본문이 누락되었습니다."}, status=400)
 
-    # 중복 저장 여부 확인 (동일 제목 및 링크)
-    existing = NewsSummary.objects.filter(title=title, news_url=news_url).first()
+    # 중복 저장 여부 확인 (동일 사용자의 동일 제목 및 링크)
+    existing = NewsSummary.objects.filter(user=request.user, title=title, news_url=news_url).first()
     if existing:
         return JsonResponse({
             "success": True,
@@ -232,10 +317,11 @@ def save_summary(request):
                 "title": existing.title,
                 "created_at": existing.created_at.strftime("%Y-%m-%d %H:%M:%S")
             },
-            "total_saved": NewsSummary.objects.count()
+            "total_saved": NewsSummary.objects.filter(user=request.user).count()
         })
 
     saved = NewsSummary.objects.create(
+        user=request.user,
         title=title,
         summary=summary,
         news_url=news_url,
@@ -253,16 +339,17 @@ def save_summary(request):
             "title": saved.title,
             "created_at": saved.created_at.strftime("%Y-%m-%d %H:%M:%S")
         },
-        "total_saved": NewsSummary.objects.count()
+        "total_saved": NewsSummary.objects.filter(user=request.user).count()
     })
 
 
+@login_required(login_url="news:login")
 @require_http_methods(["GET"])
 def history(request):
     """
-    나의 요약 히스토리 페이지
+    나의 요약 히스토리 페이지 (로그인 사용자 전용)
     """
-    summaries = NewsSummary.objects.all().order_by("-created_at")
+    summaries = NewsSummary.objects.filter(user=request.user).order_by("-created_at")
     total_count = summaries.count()
 
     return render(request, "news/history.html", {
@@ -271,13 +358,14 @@ def history(request):
     })
 
 
+@login_required(login_url="news:login")
 @csrf_exempt
 @require_http_methods(["POST", "DELETE"])
 def delete_summary(request, pk):
     """
-    저장된 요약 항목 삭제 API
+    저장된 요약 항목 삭제 API (본인 소유 항목만 삭제 가능)
     """
-    summary_item = get_object_or_404(NewsSummary, pk=pk)
+    summary_item = get_object_or_404(NewsSummary, pk=pk, user=request.user)
     title = summary_item.title
     summary_item.delete()
 
@@ -286,7 +374,6 @@ def delete_summary(request, pk):
         return JsonResponse({
             "success": True,
             "message": f"'{title}' 요약 항목이 삭제되었습니다.",
-            "total_saved": NewsSummary.objects.count()
+            "total_saved": NewsSummary.objects.filter(user=request.user).count()
         })
     return redirect("news:history")
-

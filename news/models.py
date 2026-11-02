@@ -1,9 +1,11 @@
 from django.db import models
+from django.contrib.auth.models import User
 
 class NewsSummary(models.Model):
     """
     뉴스 기사 요약 및 큐레이션 결과 저장 모델
     """
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="saved_summaries", null=True, blank=True, verbose_name="사용자")
     keyword = models.CharField(max_length=200, blank=True, verbose_name="검색 키워드")
     title = models.CharField(max_length=500, verbose_name="기사 제목")
     summary = models.TextField(verbose_name="요약 본문")
