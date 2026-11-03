@@ -1,0 +1,15 @@
+{% extends "admin/base.html" %}
+
+{% block title %}{% if subtitle %}{{ subtitle }} | {% endif %}{{ title }} | {{ site_title|default:_('Django site admin') }}{% endblock %}
+
+{% block branding %}
+<div id="site-name" style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
+  <a href="{% url 'admin:index' %}">{{ site_header|default:_('Django administration') }}</a>
+  <a href="{% url 'news:admin_dashboard' %}" style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 14px; background: linear-gradient(135deg, #6366f1 0%, #ec4899 100%); color: #ffffff !important; font-weight: 800; font-size: 12px; border-radius: 9999px; text-decoration: none; box-shadow: 0 0 12px rgba(99, 102, 241, 0.5); transition: transform 0.2s;">
+    <span>⚡ 세련된 AI 통계 대시보드 바로가기</span>
+  </a>
+</div>
+{% if user.is_anonymous %}
+  {% include "admin/color_theme_toggle.html" %}
+{% endif %}
+{% endblock %}
