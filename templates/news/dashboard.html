@@ -1,0 +1,416 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>관리자 통계 대시보드 - AI News Curator</title>
+  <meta name="description" content="AI News Curator 관리자 전용 통계 및 데이터 모니터링 대시보드">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              100: '#e0e7ff',
+              400: '#818cf8',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Google Fonts & Pretendard -->
+  <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      font-family: 'Pretendard', 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: rgba(15, 23, 42, 0.6);
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: rgba(99, 102, 241, 0.4);
+      border-radius: 9999px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: rgba(99, 102, 241, 0.7);
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen selection:bg-indigo-500 selection:text-white relative overflow-x-hidden">
+
+  <!-- Background Gradient Ambient Glows -->
+  <div class="fixed top-0 left-1/4 w-96 h-96 bg-indigo-600/15 rounded-full blur-[130px] pointer-events-none"></div>
+  <div class="fixed top-1/3 right-10 w-[30rem] h-[30rem] bg-purple-600/10 rounded-full blur-[150px] pointer-events-none"></div>
+  <div class="fixed bottom-10 left-1/3 w-80 h-80 bg-pink-600/10 rounded-full blur-[140px] pointer-events-none"></div>
+
+  <!-- Main Container -->
+  <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-8">
+
+    <!-- Top Navigation Header -->
+    <header class="bg-slate-900/80 backdrop-blur-xl border border-slate-800/80 rounded-2xl p-4 sm:p-5 shadow-2xl flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div class="flex items-center gap-3.5">
+        <div class="w-11 h-11 rounded-xl bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-500 flex items-center justify-center text-white shadow-lg shadow-indigo-500/25">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+          </svg>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-xl sm:text-2xl font-black text-white tracking-tight">관리자 통계 대시보드</h1>
+            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+              LIVE SYSTEM
+            </span>
+          </div>
+          <p class="text-xs sm:text-sm text-slate-400">AI News Curator 실시간 운영 지표 및 사용자 생성 데이터 모니터링</p>
+        </div>
+      </div>
+
+      <div class="flex items-center flex-wrap gap-2.5 sm:gap-3">
+        <!-- Staff Profile Badge -->
+        <div class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-800/90 border border-slate-700/80 text-xs sm:text-sm text-slate-300">
+          <div class="w-6 h-6 rounded-full bg-indigo-500/20 border border-indigo-400/40 flex items-center justify-center text-indigo-300 font-bold text-xs uppercase">
+            {{ request.user.username|make_list|first }}
+          </div>
+          <span class="font-bold text-white">{{ request.user.username }}</span>
+          <span class="px-1.5 py-0.5 rounded text-[10px] font-black bg-purple-500/20 text-purple-300 border border-purple-500/40">STAFF</span>
+        </div>
+
+        <!-- Back to Service Link -->
+        <a href="{% url 'news:index' %}" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700/90 border border-slate-700 text-xs sm:text-sm font-semibold text-slate-200 transition-all hover:-translate-y-0.5">
+          <svg class="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+          </svg>
+          메인 서비스로 이동
+        </a>
+
+        <!-- Django Native Admin Link -->
+        <a href="/admin/" target="_blank" class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-indigo-600/20 hover:bg-indigo-600/30 border border-indigo-500/40 text-xs sm:text-sm font-semibold text-indigo-300 transition-all" title="Django 기본 관리자 패널 새 창 열기">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+          </svg>
+          Django Admin
+        </a>
+
+        <!-- Logout Link -->
+        <a href="{% url 'news:logout' %}" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-xs sm:text-sm font-semibold text-rose-300 transition-all">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+          </svg>
+          로그아웃
+        </a>
+      </div>
+    </header>
+
+    <!-- Key Metrics / Statistics Cards (3 Essential + 1 Bonus) -->
+    <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+      
+      <!-- Card 1: 총 회원 수 -->
+      <div class="relative group bg-slate-900/80 backdrop-blur-xl border border-slate-800 rounded-2xl p-5 sm:p-6 shadow-xl transition-all duration-300 hover:border-indigo-500/50 hover:shadow-indigo-500/10 hover:-translate-y-1">
+        <div class="flex items-center justify-between mb-4">
+          <span class="text-xs font-bold uppercase tracking-wider text-indigo-400">Total Users</span>
+          <div class="w-10 h-10 rounded-xl bg-indigo-500/15 border border-indigo-500/30 flex items-center justify-center text-indigo-400 group-hover:scale-110 transition-transform">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+            </svg>
+          </div>
+        </div>
+        <div class="text-3xl sm:text-4xl font-black text-white tracking-tight mb-1">
+          {{ total_users|default:"0" }}<span class="text-base sm:text-lg font-bold text-slate-400 ml-1">명</span>
+        </div>
+        <p class="text-xs text-slate-400 flex items-center gap-1.5">
+          <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+          등록된 서비스 전체 가입 계정
+        </p>
+      </div>
+
+      <!-- Card 2: 우리가 가진 전체 데이터 개수 -->
+      <div class="relative group bg-slate-900/80 backdrop-blur-xl border border-slate-800 rounded-2xl p-5 sm:p-6 shadow-xl transition-all duration-300 hover:border-purple-500/50 hover:shadow-purple-500/10 hover:-translate-y-1">
+        <div class="flex items-center justify-between mb-4">
+          <span class="text-xs font-bold uppercase tracking-wider text-purple-400">Total Database</span>
+          <div class="w-10 h-10 rounded-xl bg-purple-500/15 border border-purple-500/30 flex items-center justify-center text-purple-400 group-hover:scale-110 transition-transform">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"></path>
+            </svg>
+          </div>
+        </div>
+        <div class="text-3xl sm:text-4xl font-black text-white tracking-tight mb-1">
+          {{ total_summaries|default:"0" }}<span class="text-base sm:text-lg font-bold text-slate-400 ml-1">건</span>
+        </div>
+        <p class="text-xs text-slate-400 flex items-center gap-1.5">
+          <span class="w-2 h-2 rounded-full bg-purple-400"></span>
+          저장된 전체 AI 뉴스 요약 데이터
+        </p>
+      </div>
+
+      <!-- Card 3: 오늘 생성된 신규 데이터 -->
+      <div class="relative group bg-slate-900/80 backdrop-blur-xl border border-slate-800 rounded-2xl p-5 sm:p-6 shadow-xl transition-all duration-300 hover:border-amber-500/50 hover:shadow-amber-500/10 hover:-translate-y-1">
+        <div class="flex items-center justify-between mb-4">
+          <span class="text-xs font-bold uppercase tracking-wider text-amber-400">Today Created</span>
+          <div class="w-10 h-10 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 group-hover:scale-110 transition-transform">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+            </svg>
+          </div>
+        </div>
+        <div class="text-3xl sm:text-4xl font-black text-white tracking-tight mb-1">
+          {{ today_summaries|default:"0" }}<span class="text-base sm:text-lg font-bold text-slate-400 ml-1">건</span>
+        </div>
+        <p class="text-xs text-slate-400 flex items-center gap-1.5">
+          <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+          오늘 하루 신규 아카이빙된 요약
+        </p>
+      </div>
+
+      <!-- Card 4: 관리자/스태프 현황 -->
+      <div class="relative group bg-slate-900/80 backdrop-blur-xl border border-slate-800 rounded-2xl p-5 sm:p-6 shadow-xl transition-all duration-300 hover:border-emerald-500/50 hover:shadow-emerald-500/10 hover:-translate-y-1">
+        <div class="flex items-center justify-between mb-4">
+          <span class="text-xs font-bold uppercase tracking-wider text-emerald-400">Staff Members</span>
+          <div class="w-10 h-10 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400 group-hover:scale-110 transition-transform">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+            </svg>
+          </div>
+        </div>
+        <div class="text-3xl sm:text-4xl font-black text-white tracking-tight mb-1">
+          {{ staff_count|default:"1" }}<span class="text-base sm:text-lg font-bold text-slate-400 ml-1">명</span>
+        </div>
+        <p class="text-xs text-slate-400 flex items-center gap-1.5">
+          <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+          관리자 권한을 보유한 스태프 계정
+        </p>
+      </div>
+
+    </section>
+
+    <!-- Main Content Area: 최근 20건 데이터 + 사이드 최근 가입 유저 -->
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+
+      <!-- Left 3 Cols: 최근에 생성된 데이터 20건 (작성자와 내용) -->
+      <section class="lg:col-span-3 space-y-4">
+        
+        <!-- Table Control Bar -->
+        <div class="bg-slate-900/80 backdrop-blur-xl border border-slate-800 rounded-2xl p-5 shadow-xl flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <div class="flex items-center gap-2">
+              <h2 class="text-lg font-black text-white flex items-center gap-2">
+                <span>가장 최근에 생성된 데이터 20건</span>
+                <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                  TOP 20 LATEST
+                </span>
+              </h2>
+            </div>
+            <p class="text-xs text-slate-400 mt-0.5">사용자별 생성 기사 및 AI 3줄 요약 본문 상세 내역</p>
+          </div>
+
+          <!-- Quick Filter Input (Client-side) -->
+          <div class="relative w-full sm:w-64">
+            <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+              </svg>
+            </span>
+            <input 
+              type="text" 
+              id="search-input" 
+              placeholder="작성자, 제목, 키워드 검색..." 
+              class="w-full bg-slate-950/70 border border-slate-800 rounded-xl pl-9 pr-3 py-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-colors"
+            >
+          </div>
+        </div>
+
+        <!-- Recent 20 Data Items List -->
+        {% if recent_summaries %}
+        <div class="space-y-3.5" id="data-items-list">
+          {% for item in recent_summaries %}
+          <article class="data-item bg-slate-900/70 backdrop-blur-xl border border-slate-800/80 hover:border-indigo-500/40 rounded-2xl p-5 transition-all duration-200 hover:shadow-xl hover:shadow-indigo-500/5 group"
+                   data-search="{{ item.user.username|default:'시스템' }} {{ item.title }} {{ item.keyword }}">
+            
+            <!-- Item Header: Author + Timestamp + Keyword -->
+            <div class="flex flex-wrap items-center justify-between gap-2.5 mb-3">
+              <div class="flex items-center gap-2">
+                <!-- User Avatar Badge -->
+                <div class="w-7 h-7 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-xs uppercase shadow-sm">
+                  {% if item.user %}
+                    {{ item.user.username|make_list|first }}
+                  {% else %}
+                    S
+                  {% endif %}
+                </div>
+                <div class="flex items-center gap-1.5">
+                  <span class="text-sm font-bold text-slate-200">
+                    {% if item.user %}
+                      {{ item.user.username }}
+                    {% else %}
+                      <span class="text-slate-400 italic">시스템 기본</span>
+                    {% endif %}
+                  </span>
+                  {% if item.user and item.user.is_staff %}
+                    <span class="px-1.5 py-0.2 rounded text-[10px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">스태프</span>
+                  {% endif %}
+                </div>
+              </div>
+
+              <div class="flex items-center gap-2">
+                {% if item.keyword %}
+                <span class="px-2.5 py-0.5 rounded-lg text-xs font-semibold bg-indigo-500/10 text-indigo-300 border border-indigo-500/25">
+                  #{{ item.keyword }}
+                </span>
+                {% endif %}
+                <time class="text-xs text-slate-400 flex items-center gap-1">
+                  <svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  </svg>
+                  {{ item.created_at|date:"Y.m.d H:i" }}
+                </time>
+              </div>
+            </div>
+
+            <!-- Item Article Title -->
+            <h3 class="text-base sm:text-lg font-bold text-white group-hover:text-indigo-300 transition-colors mb-2.5 flex items-start justify-between gap-3">
+              <span>{{ item.title }}</span>
+              {% if item.news_url %}
+              <a href="{{ item.news_url }}" target="_blank" rel="noopener noreferrer" class="shrink-0 p-1.5 rounded-lg bg-slate-800 text-slate-400 hover:text-white hover:bg-slate-700 transition-colors" title="원문 기사 보기">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                </svg>
+              </a>
+              {% endif %}
+            </h3>
+
+            <!-- Item Summary Content (3줄 요약 내용) -->
+            <div class="bg-slate-950/70 border border-slate-800/80 rounded-xl p-3.5 sm:p-4 text-xs sm:text-sm text-slate-300 leading-relaxed font-normal whitespace-pre-line border-l-4 border-l-indigo-500">
+              {{ item.summary }}
+            </div>
+
+            <!-- Optional Extra Metadata (Curator reason / take) -->
+            {% if item.selection_reason or item.curator_take %}
+            <div class="mt-3 pt-2.5 border-t border-slate-800/60 flex flex-wrap gap-4 text-xs text-slate-400">
+              {% if item.selection_reason %}
+              <div>
+                <span class="text-indigo-400 font-semibold">선정 이유:</span> {{ item.selection_reason|truncatechars:80 }}
+              </div>
+              {% endif %}
+              {% if item.curator_take %}
+              <div>
+                <span class="text-purple-400 font-semibold">큐레이터 한줄:</span> {{ item.curator_take|truncatechars:80 }}
+              </div>
+              {% endif %}
+            </div>
+            {% endif %}
+
+          </article>
+          {% endfor %}
+        </div>
+        {% else %}
+        <!-- Empty State -->
+        <div class="bg-slate-900/60 border border-slate-800 border-dashed rounded-2xl p-12 text-center">
+          <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-slate-800/80 flex items-center justify-center text-slate-500">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
+            </svg>
+          </div>
+          <h3 class="text-base font-bold text-white mb-1">저장된 데이터가 없습니다</h3>
+          <p class="text-xs text-slate-400">사용자들이 뉴스를 큐레이션하고 요약을 저장하면 이곳에 표시됩니다.</p>
+        </div>
+        {% endif %}
+
+      </section>
+
+      <!-- Right 1 Col: 보조 위젯 (최근 가입 회원 & 시스템 정보) -->
+      <aside class="space-y-6">
+
+        <!-- Recent Users Widget -->
+        <div class="bg-slate-900/80 backdrop-blur-xl border border-slate-800 rounded-2xl p-5 shadow-xl">
+          <h2 class="text-sm font-bold text-white uppercase tracking-wider mb-3 flex items-center justify-between">
+            <span>최근 가입 회원</span>
+            <span class="text-xs text-indigo-400 font-normal">신규 5명</span>
+          </h2>
+          <div class="divide-y divide-slate-800/70">
+            {% for u in recent_users %}
+            <div class="py-2.5 flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <div class="w-7 h-7 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-xs font-bold text-slate-300">
+                  {{ u.username|make_list|first|upper }}
+                </div>
+                <div>
+                  <div class="text-xs font-bold text-slate-200 flex items-center gap-1">
+                    <span>{{ u.username }}</span>
+                    {% if u.is_staff %}
+                    <span class="px-1 py-0.2 rounded text-[9px] font-bold bg-purple-500/20 text-purple-300">스태프</span>
+                    {% endif %}
+                  </div>
+                  <div class="text-[10px] text-slate-500">{{ u.date_joined|date:"Y.m.d H:i" }}</div>
+                </div>
+              </div>
+            </div>
+            {% empty %}
+            <div class="text-xs text-slate-500 py-3 text-center">회원 정보 없음</div>
+            {% endfor %}
+          </div>
+        </div>
+
+        <!-- Security & Status Info -->
+        <div class="bg-gradient-to-br from-indigo-950/40 via-slate-900/90 to-purple-950/30 border border-indigo-500/20 rounded-2xl p-5 shadow-xl space-y-3">
+          <h2 class="text-xs font-bold text-indigo-300 uppercase tracking-wider flex items-center gap-1.5">
+            <svg class="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            보안 및 접근 제어 안내
+          </h2>
+          <p class="text-xs text-slate-300 leading-relaxed">
+            본 대시보드는 <strong>is_staff=True</strong> 권한을 가진 관리자만 조회할 수 있습니다. 비인가 유저의 접근은 HTTP 403으로 자동 차단됩니다.
+          </p>
+          <div class="pt-2 border-t border-slate-800 text-[11px] text-slate-400 space-y-1">
+            <div>• 환경: Render Cloud Production</div>
+            <div>• 데이터베이스: PostgreSQL Remote Engine</div>
+            <div>• 세션 암호화: Django Auth Middleware 활성</div>
+          </div>
+        </div>
+
+      </aside>
+
+    </div>
+
+  </div>
+
+  <!-- Client-side Fast Filter Script -->
+  <script>
+    const searchInput = document.getElementById('search-input');
+    const dataItems = document.querySelectorAll('.data-item');
+
+    if (searchInput) {
+      searchInput.addEventListener('input', function (e) {
+        const query = e.target.value.toLowerCase().trim();
+        dataItems.forEach(item => {
+          const text = item.getAttribute('data-search') ? item.getAttribute('data-search').toLowerCase() : '';
+          if (!query || text.includes(query)) {
+            item.style.display = 'block';
+          } else {
+            item.style.display = 'none';
+          }
+        });
+      });
+    }
+  </script>
+
+</body>
+</html>

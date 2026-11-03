@@ -148,6 +148,12 @@
       gap: 0.6rem;
     }
 
+    .auth-alert.alert-success {
+      background: rgba(16, 185, 129, 0.12);
+      border-color: rgba(16, 185, 129, 0.4);
+      color: #6ee7b7;
+    }
+
     /* Form Fields */
     .form-group {
       margin-bottom: 1.4rem;
@@ -274,6 +280,17 @@
           AI 뉴스 큐레이터 서비스 이용을 위해 로그인해 주세요.
         </p>
       </div>
+
+      <!-- Registration Success Alert -->
+      {% if request.GET.registered %}
+      <div class="auth-alert alert-success">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+          <polyline points="22 4 12 14.01 9 11.01"></polyline>
+        </svg>
+        <span>회원가입이 완료되었습니다! 방금 생성하신 계정으로 로그인해 주세요.</span>
+      </div>
+      {% endif %}
 
       <!-- Error Alert -->
       {% if error %}

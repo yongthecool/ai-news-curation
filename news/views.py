@@ -9,6 +9,8 @@ from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from django.contrib.auth.models import User
+from django.utils import timezone
 from .models import NewsSummary
 from .services.naver_search import NaverSearchService
 from .services.gemini_curator import GeminiCuratorService
@@ -71,9 +73,8 @@ def signup_view(request):
     if request.method == "POST":
         form = UserCreationForm(request.POST)
         if form.is_valid():
-            user = form.save()
-            login(request, user)
-            return redirect("news:index")
+            form.save()
+            return redirect("/login/?registered=1")
         else:
             errors_list = []
             for field, errs in form.errors.items():
@@ -377,3 +378,43 @@ def delete_summary(request, pk):
             "total_saved": NewsSummary.objects.filter(user=request.user).count()
         })
     return redirect("news:history")
+
+
+# ==========================================
+# 4. 커스텀 관리자 대시보드 뷰 (스태프 전용)
+# ==========================================
+
+@login_required(login_url="news:login")
+@require_http_methods(["GET"])
+def admin_dashboard(request):
+    """
+    커스텀 관리자 대시보드 뷰
+    - 스태프(is_staff=True) 권한을 가진 사용자만 접근 가능
+    - 총 회원 수, 전체 요약 데이터 개수, 최근 20건 데이터 조회
+    """
+    if not request.user.is_staff:
+        # 일반 유저는 접근 불가: 403 Forbidden 응답 및 전용 권한 오류 화면 렌더링
+        return render(request, "news/403.html", status=403)
+
+    # 1. 핵심 통계 지표 산출
+    total_users = User.objects.count()
+    total_summaries = NewsSummary.objects.count()
+
+    today = timezone.now().date()
+    today_summaries = NewsSummary.objects.filter(created_at__date=today).count()
+    staff_count = User.objects.filter(is_staff=True).count()
+
+    # 2. 가장 최근에 생성된 데이터 20건 (작성자 정보 포함)
+    recent_summaries = NewsSummary.objects.select_related("user").order_by("-created_at")[:20]
+
+    # 3. 최근 가입한 회원 5명 (보조 통계)
+    recent_users = User.objects.order_by("-date_joined")[:5]
+
+    return render(request, "news/dashboard.html", {
+        "total_users": total_users,
+        "total_summaries": total_summaries,
+        "today_summaries": today_summaries,
+        "staff_count": staff_count,
+        "recent_summaries": recent_summaries,
+        "recent_users": recent_users,
+    })

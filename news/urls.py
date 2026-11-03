@@ -11,4 +11,5 @@ urlpatterns = [
     path("save/", views.save_summary, name="save_summary"),
     path("history/", views.history, name="history"),
     path("history/<int:pk>/delete/", views.delete_summary, name="delete_summary"),
+    path("admin-dashboard/", views.admin_dashboard, name="admin_dashboard"),
 ]

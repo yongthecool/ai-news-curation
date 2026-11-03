@@ -151,6 +151,30 @@
       box-shadow: 0 6px 20px rgba(99, 102, 241, 0.5);
     }
 
+    .admin-nav-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.6rem 1.15rem;
+      border-radius: 10px;
+      background: linear-gradient(135deg, rgba(139, 92, 246, 0.25) 0%, rgba(236, 72, 153, 0.25) 100%);
+      border: 1px solid rgba(168, 85, 247, 0.5);
+      color: #f5d0fe;
+      font-size: 0.92rem;
+      font-weight: 800;
+      text-decoration: none;
+      transition: all 0.25s ease;
+      box-shadow: 0 0 15px rgba(168, 85, 247, 0.2);
+    }
+
+    .admin-nav-btn:hover {
+      background: linear-gradient(135deg, rgba(139, 92, 246, 0.45) 0%, rgba(236, 72, 153, 0.45) 100%);
+      border-color: rgba(216, 180, 254, 0.8);
+      color: #ffffff;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 20px rgba(168, 85, 247, 0.4);
+    }
+
     .user-profile-badge {
       display: inline-flex;
       align-items: center;
@@ -587,6 +611,14 @@
           </svg>
           <span>새 뉴스 큐레이션하기</span>
         </a>
+        {% if request.user.is_staff %}
+        <a href="{% url 'news:admin_dashboard' %}" class="admin-nav-btn" title="관리자 전용 통계 대시보드">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
+          </svg>
+          <span>관리자 패널</span>
+        </a>
+        {% endif %}
         <a href="{% url 'news:logout' %}" class="logout-btn" title="로그아웃">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
